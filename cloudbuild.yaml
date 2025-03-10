@@ -19,7 +19,11 @@ steps:
         "--region", "${_REGION}",
         "--images", "$_IMAGE_NAME=${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:$BUILD_ID"
       ]
+  env:
+    - "API_WEATHER_URL=${_API_WEATHER_URL}"
   entrypoint: gcloud
+substitutions:
+    _API_WEATHER_URL: ${_API_WEATHER_URL}
 images:
 - ${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:$BUILD_ID
 

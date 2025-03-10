@@ -11,3 +11,6 @@ spec:
           limits:
             cpu: 1
             memory: 512Mi
+        env:
+        - name: API_WEATHER_URL
+          value: ${_API_WEATHER_URL}

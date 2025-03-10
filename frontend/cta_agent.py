@@ -14,6 +14,8 @@ from langchain_core.messages.base import BaseMessage, BaseMessageChunk
 from typing import Literal
 from langgraph.graph import MessageGraph, START , END , StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
+import google.auth.transport.requests
+import google.oauth2.id_token
 from typing_extensions import TypedDict
 from typing import Annotated
 from langgraph.graph.message import add_messages
@@ -32,31 +34,26 @@ def get_weather(city: str = "Lima") -> str:
     """
     print("@@@@@@@@@@")
     print("@@@@@@@@@@" + city)
-    url=f"https://api-meteo-demo-dev-93433691361.europe-west1.run.app/meteocris"
-          
-   # url = os.environ.get("API_WEATHER_URL")
-   # if not url:
-   #     raise Exception("API_WEATHER_URL missing")
+    url_api = os.environ.get("API_WEATHER_URL")
+    if not url_api:
+        raise Exception("API_WEATHER_URL missing")
+    url=f"{url_api}/meteocris"
 
     req = urllib.request.Request( url+'?cityname='+city.upper() )
-   # auth_req = google.auth.transport.requests.Request()
+    auth_req = google.auth.transport.requests.Request()
     target_audience = url
-    #id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
-    #req.add_header("Authorization", f"Bearer {id_token}")
+    id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
+    req.add_header("Authorization", f"Bearer {id_token}")
     response = urllib.request.urlopen(req)
     jsonloads= json.loads(response.read())
-    print(f"***agent.py  2 After calling API in new_request controller.py jsonloads - {jsonloads} !") 
     print(f"***agent.py  3 in new_request controller.py response.read - {response.read()} !") 
     jsondumps=json.dumps(jsonloads)
     print(f"***agent.py  4 in new_request controller.py response - {jsondumps} !") 
     dataweather = {}
-    # default data
     dataweather['city'] = city
     dataweather['weather'] = jsondumps
     print(f"***agent.py 5 in new_request data - {dataweather} !") 
-    return dataweather # response.read()
-#    return {"weather_data": "el tiempo en Lima es 22 grados"}
-
+    return dataweather 
 
 @tool
 def get_ctaciaInfo(question: str = "emKszv8xjISy446FJNmK") -> str:
@@ -67,7 +64,7 @@ def get_ctaciaInfo(question: str = "emKszv8xjISy446FJNmK") -> str:
     """
     print("@@@@@@@@@@")
     print(question)
-    return {"Info": "cta-cia es una empresa dedicada a la metereología..."}
+    return {"Info": "cta-cia es una empresa dedicada a dar información útil del tiempo ..."}
 
 
 @tool
@@ -92,30 +89,28 @@ def get_temperature(city: str):
     """
     print("@@@@@@@@@@")
     print("@@@@@@@@@@" + city)
-    url=f"https://api-meteo-demo-dev-93433691361.europe-west1.run.app/get_temperature"
-          
-   # url = os.environ.get("API_WEATHER_URL")
-   # if not url:
-   #     raise Exception("API_WEATHER_URL missing")
+   
+    url_api = os.environ.get("API_WEATHER_URL")
+    if not url_api:
+        raise Exception("API_WEATHER_URL missing")
+    url=f"{url_api}/get_temperature"
 
     req = urllib.request.Request( url+'?cityname='+city.upper() )
-   # auth_req = google.auth.transport.requests.Request()
+    auth_req = google.auth.transport.requests.Request()
     target_audience = url
-    #id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
-    #req.add_header("Authorization", f"Bearer {id_token}")
+    id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
+    req.add_header("Authorization", f"Bearer {id_token}")
     response = urllib.request.urlopen(req)
     jsonloads= json.loads(response.read())
-    print(f"***agent.py  2 After calling API in new_request controller.py jsonloads - {jsonloads} !") 
-    print(f"***agent.py  3 in new_request controller.py response.read - {response.read()} !") 
+    print(f"***agent.py  3 in get_temperature controller.py response.read - {response.read()} !") 
     jsondumps=json.dumps(jsonloads)
-    print(f"***agent.py  4 in new_request controller.py response - {jsondumps} !") 
+    print(f"***agent.py  4 in get_temperature controller.py response - {jsondumps} !") 
     dataweather = {}
     # default data
     dataweather['city'] = city
     dataweather['weather'] = jsondumps
-    print(f"***agent.py 5 in new_request data - {dataweather} !") 
-    return dataweather # response.read()
-#    return {"weather_data": "el tiempo en Lima es 22 grados"}
+    print(f"***agent.py 5 in get_temperature data - {dataweather} !") 
+    return dataweather #
 
 @tool
 def get_supportTool(getsupport: str):
@@ -138,7 +133,6 @@ llm_with_tools = llm.bind_tools(TOOLS)
 # --- Define State and Graph ---
 class State(TypedDict):
     messages: Annotated[list, add_messages]
-
 
 graph_builder = StateGraph(State)
 
@@ -216,7 +210,7 @@ graph_builder.add_edge(START, "chatbot")
 graph = graph_builder.compile()
 
 # --- Streamlit App ---
-st.title("CTA-CIA Assistant")
+st.title("Tempo Assistant")
 
 # Initialize chat history
 if "messages" not in st.session_state:

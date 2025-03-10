@@ -20,6 +20,7 @@ export PROJECT_NAME=$(gcloud projects describe $PROJECT_ID --format='value(name)
 export REGION=europe-west1
 export IMAGE_NAME=weather-agent
 export REPO_NAME=demos-docker-repo
+export API_URL=$API_URL
 
 gcloud config set project $PROJECT_ID
 
@@ -59,7 +60,7 @@ export RELEASE_TIMESTAMP=$(date '+%Y%m%d-%H%M%S')
 
 gcloud builds submit \
   --config ./cloudbuild.yaml \
-  --substitutions=_REGION=${REGION},_RELEASE_TIMESTAMP=${RELEASE_TIMESTAMP},_IMAGE_NAME=${IMAGE_NAME},_REPO_NAME=${REPO_NAME}
+  --substitutions=_REGION=${REGION},_RELEASE_TIMESTAMP=${RELEASE_TIMESTAMP},_IMAGE_NAME=${IMAGE_NAME},_REPO_NAME=${REPO_NAME},_API_WEATHER_URL=${API_URL}
 
 gcloud beta deploy releases promote \
     --release="release-${RELEASE_TIMESTAMP}" \
