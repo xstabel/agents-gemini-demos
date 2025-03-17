@@ -27,8 +27,8 @@ import os
 @tool
 def get_weather(city: str = "Lima") -> str:
     """
-    This function get updated weather information for a given lists of locations and dates. 
-    Useful for clothing advice and planning activities.
+    This function get updated weather information for a given city and dates. 
+    Useful for clothing advice and planning activities. If a city is not given then ask for it to complete your request. 
     :param city: A string with the name of a city to get the weather for and call the weather API
     :return: a string containing the response
     """
@@ -40,15 +40,19 @@ def get_weather(city: str = "Lima") -> str:
     url=f"{url_api}/meteocris"
 
     req = urllib.request.Request( url+'?cityname='+city.upper() )
-    auth_req = google.auth.transport.requests.Request()
-    target_audience = url
-    id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
-    req.add_header("Authorization", f"Bearer {id_token}")
+    # add the logic to call the remote authentication when running in cloud run or from local development
+    if google.auth.default()[0].requires_scopes:        
+        auth_req = google.auth.transport.requests.Request()
+        target_audience = url
+        id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
+        req.add_header("Authorization", f"Bearer {id_token}")
+    else:
+        print("@@@@@@@@@@ from local")
     response = urllib.request.urlopen(req)
     jsonloads= json.loads(response.read())
-    print(f"***agent.py  3 in new_request controller.py response.read - {response.read()} !") 
+    print(f"***agent.py 3 in new_request controller.py response.read - {response.read()} !") 
     jsondumps=json.dumps(jsonloads)
-    print(f"***agent.py  4 in new_request controller.py response - {jsondumps} !") 
+    print(f"***agent.py 4 in new_request controller.py response - {jsondumps} !") 
     dataweather = {}
     dataweather['city'] = city
     dataweather['weather'] = jsondumps
@@ -96,10 +100,16 @@ def get_temperature(city: str):
     url=f"{url_api}/get_temperature"
 
     req = urllib.request.Request( url+'?cityname='+city.upper() )
-    auth_req = google.auth.transport.requests.Request()
-    target_audience = url
-    id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
-    req.add_header("Authorization", f"Bearer {id_token}")
+    # add the logic to call the remote authentication when running in cloud run or from local development
+    if google.auth.default()[0].requires_scopes:
+        print("@@@@@@@@@@ from local")
+        auth_req = google.auth.transport.requests.Request()
+        target_audience = url
+        id_token = google.oauth2.id_token.fetch_id_token(auth_req, target_audience)
+        req.add_header("Authorization", f"Bearer {id_token}")
+    else:
+        print("@@@@@@@@@@ from local")
+    response = urllib.request.urlopen(req)
     response = urllib.request.urlopen(req)
     jsonloads= json.loads(response.read())
     print(f"***agent.py  3 in get_temperature controller.py response.read - {response.read()} !") 
@@ -125,7 +135,6 @@ def get_supportTool(getsupport: str):
 
 
 TOOLS = [get_weather, get_ctaciaInfo, get_meteoGlossary, get_supportTool, get_temperature]
-###llm = ChatOpenAI(temperature=0)
 llm = ChatVertexAI(model_name="gemini-2.0-flash-exp")
 llm_with_tools = llm.bind_tools(TOOLS)
 
@@ -138,7 +147,7 @@ graph_builder = StateGraph(State)
 
 
 def chatbot(state: State):
-    return {"messages": [llm_with_tools.invoke(state["messages"])]}
+    return {"messages": [llm_with_tools.invoke(state["messages"], prompt=prompt)]}
 
 
 graph_builder.add_node("chatbot", chatbot)
@@ -192,16 +201,9 @@ def route_tools(
     return "__end__"
 
 
-# The `tools_condition` function returns "tools" if the chatbot asks to use a tool, and "__end__" if
-# it is fine directly responding. This conditional routing defines the main agent loop.
 graph_builder.add_conditional_edges(
     "chatbot",
     route_tools,
-    # The following dictionary lets you tell the graph to interpret the condition's outputs as a specific node
-    # It defaults to the identity function, but if you
-    # want to use a node named something else apart from "tools",
-    # You can update the value of the dictionary to something else
-    # e.g., "tools": "my_tools"
     {"tools": "tools", "__end__": "__end__"},
 )
 # Any time a tool is called, we return to the chatbot to decide the next step
@@ -230,10 +232,8 @@ if prompt := st.chat_input("What is up?"):
 
     # Process user input with the LangGraph
     full_response = ""
-    with st.chat_message("assistant"):
-      
+    with st.chat_message("assistant"):      
         message_placeholder = st.empty()
-
         for event in graph.stream({"messages": [("user", prompt)]}):
             for value in event.values():
                 if isinstance(value["messages"][-1], BaseMessage):
