@@ -37,8 +37,9 @@ gcloud services enable \
 
 sed -e "s/_PROJECT_ID/$PROJECT_ID/g" cloud-deploy.yaml > cloud-deploy-temp.yaml
 sed -e "s/_IMAGE_NAME/${IMAGE_NAME}/g" deploy-dev.yaml > deploy-dev-temp.yaml
-sed -e "s/_IMAGE_NAME/${IMAGE_NAME}/g" deploy-pre.yaml > deploy-pre-temp.yaml
-sed -e "s/_IMAGE_NAME/${IMAGE_NAME}/g" deploy-pro.yaml > deploy-pro-temp.yaml
+sed -e "s/_API_WEATHER_URL/${API_URL}/g" deploy-dev-temp.yaml > deploy-dev-temp.yaml
+#sed -e "s/_IMAGE_NAME/${IMAGE_NAME}/g" deploy-pre.yaml > deploy-pre-temp.yaml
+#sed -e "s/_IMAGE_NAME/${IMAGE_NAME}/g" deploy-pro.yaml > deploy-pro-temp.yaml
 
 # create deploy first time
 gcloud deploy apply \

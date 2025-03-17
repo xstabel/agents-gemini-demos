@@ -25,7 +25,7 @@ The agent's core functionality is built around:
 
 *   **Conversational Interface:** Users can interact with the assistant in a natural, conversational way.
 *   **Weather Data Retrieval:** Fetches real-time weather data from a weather API.
-*   **CTA-CIA Information:** Accesses and shares information about the company.
+*   **Information:** Accesses and shares information about the company.
 *   **Meteorological Glossary:** Provides definitions of weather-related terms.
 *   **Technical Support:** Offers support and guidance to users.
 * **Temperature check**: You can ask directly the temperature in a specific city.
@@ -41,7 +41,7 @@ The agent's core functionality is built around:
 *   **Python 3.9+:** Ensure you have a compatible Python version.
 *   **Poetry (Recommended) or pip:**  For managing dependencies.
 *   **Google Cloud Project:**  You'll need a Google Cloud project to use Vertex AI and set up the Google Cloud Function integration.
-*   **Google Gemini API Key:** Obtain a key from the Google AI Studio [https://makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey).
+*   **Google Gemini API Key:** Obtain a key from the Google AI Studio or better use VertexAI sdk present in this project.
 *   **Google Cloud Function deployed** : you need to have the functions described in the code deployed in Google Cloud.
 *   **Environment variables**: You must have a `API_WEATHER_URL` environment variable, pointing to your google cloud function.
 
@@ -95,4 +95,11 @@ The agent's core functionality is built around:
 
 ## Project Structure
 
-Langgraph_meteo/ ├── frontend-assistant/ │ ├── frontend/ │ │ └── cta_agent.py # Main Streamlit app and agent logic ├── ... # Other potential directories for your Langgraph app. ├── requirements.txt # Project dependencies (if managed by pip) └── pyproject.toml # Project dependencies (if managed by poetry) └── README.md # This file
+Langgraph_agent/ 
+├── frontend-assistant/ │ 
+├── frontend/ │ 
+│ └── cta_agent.py # Main Streamlit app and agent logic 
+├── ... # Other potential directories for your Langgraph app. 
+├── requirements.txt # Project dependencies (if managed by pip) 
+└── pyproject.toml # Project dependencies (if managed by poetry) 
+└── README.md # This file
