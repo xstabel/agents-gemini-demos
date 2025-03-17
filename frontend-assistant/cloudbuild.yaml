@@ -1,0 +1,29 @@
+# Build application from dockerfile
+
+steps:
+# Build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:$BUILD_ID', '-f', './frontend/Dockerfile', './frontend']
+ # este funciona  args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:$BUILD_ID', '-f', './api-weather/Dockerfile', './api-weather']
+# Push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:$BUILD_ID']
+# Deploy container image to Cloud Run
+##- name: 'gcr.io/cloud-builders/gcloud'
+##  args: ['run', 'deploy', 'myservice', '--image', '${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/${_IMAGE_NAME}:$BUILD_ID', '--region', '${_REGION}', '--platform', 'managed', '--allow-unauthenticated']
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+  args: 
+      [
+        "deploy", "releases", "create", "release-$_RELEASE_TIMESTAMP",
+        "--delivery-pipeline", "weather-agent-pipeline",
+        "--region", "${_REGION}",
+        "--images", "$_IMAGE_NAME=${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:$BUILD_ID"
+      ]
+  env:
+    - "API_WEATHER_URL=${_API_WEATHER_URL}"
+  entrypoint: gcloud
+substitutions:
+    _API_WEATHER_URL: ${_API_WEATHER_URL}
+images:
+- ${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_IMAGE_NAME:$BUILD_ID
+

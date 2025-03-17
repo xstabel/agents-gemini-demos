@@ -1,0 +1,15 @@
+langchain
+langchain-core
+langgraph
+streamlit
+langchain-community
+langchain-openai
+openai
+langchain-google-genai
+typer
+requests
+typing
+google-cloud-aiplatform
+google-cloud-logging
+google-auth
+langchain-google-vertexai
